@@ -48,14 +48,12 @@ func originalProblem() {
 	}
 	w.Flush()
 
-	// now, pretending that we got this file externally, create the bitmap
-	// and read it in
-
-
 	/* this is related to question 2 -- what to do if your langauge doesn't support
 	bitmaps -- using logical operations and otherwise */
 	bitmap := make([]int8, input_size)
 
+	// now, pretending that we got this file externally, create the bitmap
+	// and read it in
 	infh, err := os.Open(input_file)
 	if err != nil {
 		fmt.Println(err)
@@ -74,6 +72,8 @@ func originalProblem() {
 		bitmap[val] = 1
 	}
 	
+	/* The original question had an input file and output file, but
+	I needed an excuse to write the random number generation in go (vs opening stdin).*/
 	for i, v := range bitmap {
 		if v == 1 {
 			fmt.Println(i)

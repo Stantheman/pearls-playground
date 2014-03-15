@@ -12,15 +12,15 @@ import (
 
 func main() {
 
-	originalProblem()
-	firstProblem()
+	const inputSize = 10000000 // 10 mil
+	originalProblem(inputSize)
+	firstProblem(inputSize)
 
 }
 
 const (
 	input_file  = "/tmp/first_pearl_input.txt"
 	output_file = "/tmp/first_pearl_output.txt"
-	input_size  = 27000
 )
 
 func writeIntArray(integers []int, filename string, truncate int) (err error) {
@@ -64,9 +64,9 @@ existance of an integer in the file.
 
 This code creates the array of integers, writes then to a file delimited by newlines
 and then procedes to recreate the solution listed above. */
-func originalProblem() {
+func originalProblem(inputSize int) {
 
-	integers := random.GenerateUniqueRandomIntegers(input_size)
+	integers := random.GenerateUniqueRandomIntegers(inputSize)
 
 	err := writeIntArray(integers, input_file, 1)
 	if err != nil {
@@ -75,7 +75,7 @@ func originalProblem() {
 	}
 	/* this is related to question 2 -- what to do if your langauge doesn't support
 	bitmaps -- using logical operations and otherwise */
-	bitmap := make([]int8, input_size)
+	bitmap := make([]int8, inputSize)
 
 	// now, pretending that we got this file externally, create the bitmap
 	// and read it in
@@ -107,9 +107,9 @@ func originalProblem() {
 }
 
 // the first problem is how to solve the issue if you have a limited amount of memory
-func firstProblem() {
+func firstProblem(inputSize int) {
 
-	integers := random.GenerateUniqueRandomIntegers(input_size)
+	integers := random.GenerateUniqueRandomIntegers(inputSize)
 
 	// create the input file that will be read
 	err := writeIntArray(integers, input_file, 1)
@@ -118,9 +118,9 @@ func firstProblem() {
 		return
 	}
 
-	const availableRam = input_size / 5
+	availableRam := inputSize / 5
 
-	passes := int(math.Ceil(float64(input_size) / float64(availableRam)))
+	passes := int(math.Ceil(float64(inputSize) / float64(availableRam)))
 
 	// open the input file for reading
 	readFH, err := os.Open(input_file)
@@ -156,10 +156,10 @@ func firstProblem() {
 		}
 
 		//now that we've looped over the file, let's append the bitmap knowledge to our file
-		for index, value := range bitmap {
-			if value == 1 {
-				fmt.Println(index + (i * availableRam))
-			}
-		}
+		// for index, value := range bitmap {
+		// 	if value == 1 {
+		// 		fmt.Println(index + (i * availableRam))
+		// 	}
+		// }
 	}
 }

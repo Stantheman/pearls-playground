@@ -4,6 +4,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/Stantheman/pearls/helpers/bitmap"
 	"github.com/Stantheman/pearls/helpers/random"
 	"math"
 	"os"
@@ -12,9 +13,23 @@ import (
 
 func main() {
 
-	const inputSize = 10000000 // 10 mil
-	originalProblem(inputSize)
-	firstProblem(inputSize)
+	const inputSize = 50
+
+	input_file := "/tmp/wtf.txt"
+	integers := random.GenerateUniqueRandomIntegers(inputSize)
+
+	err := writeIntArray(integers, input_file, 1)
+	if err != nil {
+		fmt.Printf("Couldn't write out integers to file %v: %v", input_file, err)
+		return
+	}
+
+	var thing bitmap.FirstBitmap
+	thing.Sort(input_file, inputSize)
+	fmt.Printf("thing is %v, %T\n", thing, thing)
+
+	//originalProblem(inputSize)
+	//firstProblem(inputSize)
 
 }
 

@@ -258,10 +258,10 @@ func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err er
 			if int(val) >= min && int(val) < max {
 				/* If we have 100 bits per pass and we see 125, we're on the second pass, so min = 1*100 = 100
 				125-100 = 25. we're in the 25th bit slot, and 25/64 = 0, so the first available integer in the array*/
-				position := (int(val) - min) / 64
+				position := (int(val) - min) >> 6
 				/* If we have 10 bits per pass and see 68, it means we're on the 6th pass, which makes min = 6*10 = 60
 				position is (68 - 60) / 64= integer 0. 68 - 0 - 60 = 8th bit */
-				bit := int(val) - (64 * position) - min
+				bit := int(val) - (position << 6) - min
 				// fmt.Printf("pos is %v, bit is %v, value is %v\n", position, bit, val)
 				bits[position] = bits[position] | 1<<uint(bit)
 			}

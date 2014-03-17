@@ -15,7 +15,21 @@ const (
 	inputFile  = "/tmp/first_pearl_input.txt"
 	outputFile = "/tmp/first_pearl_output.txt"
 	inputSize  = 10000
+	available  = inputSize / 10
 )
+
+func BenchmarkGoSort(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		nums, err := readIntSlice(inputFile)
+		if err != nil {
+			return
+		}
+		sort.Ints(nums)
+		writeIntSlice(nums, outputFile, 1)
+	}
+}
 
 func TestNaiveSort(t *testing.T) {
 	setup()
@@ -39,7 +53,7 @@ func BenchmarkNaiveSort(b *testing.B) {
 func TestLimitedSort(t *testing.T) {
 	setup()
 
-	err := LimitedSort(inputFile, outputFile, inputSize, inputSize/2)
+	err := LimitedSort(inputFile, outputFile, inputSize, available)
 	if err != nil {
 		t.Error(err)
 	}
@@ -50,14 +64,14 @@ func BenchmarkLimitedSort(b *testing.B) {
 	setup()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		LimitedSort(inputFile, outputFile, inputSize, inputSize/2)
+		LimitedSort(inputFile, outputFile, inputSize, available)
 	}
 }
 
 func TestBitSort(t *testing.T) {
 	setup()
 
-	err := BitSort(inputFile, outputFile, inputSize, inputSize/10)
+	err := BitSort(inputFile, outputFile, inputSize, available)
 	if err != nil {
 		t.Error(err)
 	}
@@ -68,7 +82,25 @@ func BenchmarkBitSort(b *testing.B) {
 	setup()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		BitSort(inputFile, outputFile, inputSize, inputSize/2)
+		BitSort(inputFile, outputFile, inputSize, available)
+	}
+}
+
+func TestBitSortPrimative(t *testing.T) {
+	setup()
+
+	err := BitSortPrimative(inputFile, outputFile, inputSize, available)
+	if err != nil {
+		t.Error(err)
+	}
+	compareInputAndOutput(t)
+}
+
+func BenchmarkBitSortPrimative(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		BitSortPrimative(inputFile, outputFile, inputSize, available)
 	}
 }
 

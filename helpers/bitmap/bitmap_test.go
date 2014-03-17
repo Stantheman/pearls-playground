@@ -1,4 +1,14 @@
-/* Tests for the bitmap functions */
+/* Tests for the bitmap functions.
+Useful for fair total benchmarking:
+
+go test -bench="OnePass|Go|Naive" -benchmem | column -t
+
+Running something like the following two lines lets you dial in on a specific func:
+
+./bitmap.test -test.bench="BenchmarkBitSortPrimative" -test.memprofile=mem.out -test.memprofilerate=1 -test.run="x"
+go tool pprof --show_bytes --lines bitmap.test mem.out
+
+*/
 package bitmap
 
 import (
@@ -68,6 +78,14 @@ func BenchmarkLimitedSort(b *testing.B) {
 	}
 }
 
+func BenchmarkLimitedSortOnePass(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		LimitedSort(inputFile, outputFile, inputSize, inputSize)
+	}
+}
+
 func TestBitSort(t *testing.T) {
 	setup()
 
@@ -86,6 +104,14 @@ func BenchmarkBitSort(b *testing.B) {
 	}
 }
 
+func BenchmarkBitSortOnePass(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		BitSort(inputFile, outputFile, inputSize, inputSize)
+	}
+}
+
 func TestBitSortPrimative(t *testing.T) {
 	setup()
 
@@ -101,6 +127,14 @@ func BenchmarkBitSortPrimative(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		BitSortPrimative(inputFile, outputFile, inputSize, available)
+	}
+}
+
+func BenchmarkBitSortPrimativeOnePass(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		BitSortPrimative(inputFile, outputFile, inputSize, inputSize)
 	}
 }
 

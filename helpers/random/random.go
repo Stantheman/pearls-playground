@@ -1,5 +1,7 @@
-/* Helpers is a chunk of functions that are useful to me in
-testing code from programming pearls */
+/* This generates random numbers for use by the bitmap
+Question #4 asks how one might generate a file of numbers from 1..N
+in random order. It was solved by generating 1..N and using the
+Fisher-Yates algorithm to shuffle */
 package random
 
 import (

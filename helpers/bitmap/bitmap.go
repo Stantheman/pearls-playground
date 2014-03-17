@@ -221,9 +221,7 @@ func BitSort(input_fn, output_fn string, length_b, avail_b int) (err error) {
 
 }
 
-/* The second half of the second question asks about bitwise operations. This function
-should provide the same functionality as BitSort without using the convenience functions
-from math/big */
+/* BitSortPrimative uses bitwise operations instead of math/big to sort */
 func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err error) {
 
 	in, out, err := sortSetup(input_fn, output_fn, length_b, avail_b)

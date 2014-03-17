@@ -2,6 +2,7 @@ package random
 
 import (
 	"math"
+	"sort"
 	"testing"
 )
 
@@ -53,6 +54,36 @@ func TestGenerateUniqueRandomIntegers(t *testing.T) {
 			if vi == vj {
 				t.Errorf("Index %v and %v contain the same value %v\n", i, j, vi)
 			}
+		}
+	}
+}
+
+// TestGenerateUniqueRandomIntegers checks size and uniqueness
+func TestGenerateLimitedRandomIntegers(t *testing.T) {
+	limit := 10
+	numbers := GenerateLimitedRandomIntegers(ArraySize, limit)
+	length := len(numbers)
+
+	// we don't know how many elements we're asking for, but we know it can't be more than ArraySize*limit
+	if length > ArraySize*limit {
+		t.Errorf("The length is larger than the possible outcome size: %v length, theoretical max of %v\n", length, ArraySize*limit)
+	}
+
+	sort.Ints(numbers)
+
+	last, count := 0, 0
+	for _, v := range numbers {
+		if v == last {
+			count++
+		} else {
+			count = 1
+			last = v
+		}
+		if count > limit {
+			t.Errorf("More than %v occurences of %v\n", limit, last)
+		}
+		if v > ArraySize {
+			t.Error("%v is larger than the max of %v\n", v, ArraySize)
 		}
 	}
 }
@@ -112,5 +143,11 @@ func BenchmarkGenerateIncreasingRandomIntegers(b *testing.B) {
 func BenchmarkGenerateUniqueRandomIntegers(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		GenerateUniqueRandomIntegers(ArraySize)
+	}
+}
+
+func BenchmarkGenerateLimitedRandomIntegers(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		GenerateLimitedRandomIntegers(ArraySize, 10)
 	}
 }

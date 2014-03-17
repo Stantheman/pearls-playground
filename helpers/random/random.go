@@ -44,3 +44,26 @@ func GenerateUniqueRandomIntegers(count int) (list sort.IntSlice) {
 
 	return
 }
+
+// GenerateLimitedRandomIntegers generates a list of random integers that occur up 0..N times
+func GenerateLimitedRandomIntegers(count, occur int) (list sort.IntSlice) {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// this is a horrifying way of making an always-growing list that's probably terrible
+	list = make([]int, 0)
+
+	for i := 0; i < count; i++ {
+		for j := 0; j < r.Intn(occur+1); j++ {
+			list = append(list, i)
+		}
+	}
+
+	// starting from the end, swap with a random smaller integer until done
+	// (Fisher-Yates http://en.wikipedia.org/wiki/Fisher-Yates_shuffle)
+	for i := count - 1; i > 0; i-- {
+		// Intn is exclusive, Fisher-Yates says 0 <= j <= i
+		rand := r.Intn(i + 1)
+		list.Swap(i, rand)
+	}
+
+	return
+}

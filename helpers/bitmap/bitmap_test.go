@@ -14,7 +14,7 @@ import (
 const (
 	inputFile  = "/tmp/first_pearl_input.txt"
 	outputFile = "/tmp/first_pearl_output.txt"
-	inputSize  = 100
+	inputSize  = 10000
 )
 
 func TestNaiveSort(t *testing.T) {
@@ -28,6 +28,14 @@ func TestNaiveSort(t *testing.T) {
 	compareInputAndOutput(t)
 }
 
+func BenchmarkNaiveSort(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		NaiveSort(inputFile, outputFile, inputSize)
+	}
+}
+
 func TestLimitedSort(t *testing.T) {
 	setup()
 
@@ -36,6 +44,32 @@ func TestLimitedSort(t *testing.T) {
 		t.Error(err)
 	}
 	compareInputAndOutput(t)
+}
+
+func BenchmarkLimitedSort(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		LimitedSort(inputFile, outputFile, inputSize, inputSize/2)
+	}
+}
+
+func TestBitSort(t *testing.T) {
+	setup()
+
+	err := BitSort(inputFile, outputFile, inputSize, inputSize/10)
+	if err != nil {
+		t.Error(err)
+	}
+	compareInputAndOutput(t)
+}
+
+func BenchmarkBitSort(b *testing.B) {
+	setup()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		BitSort(inputFile, outputFile, inputSize, inputSize/2)
+	}
 }
 
 func setup() {
@@ -69,12 +103,12 @@ func compareInputAndOutput(t *testing.T) {
 	sort.Ints(unsorted)
 
 	if len(unsorted) != len(sorted) {
-		t.Error("The input length (%v) and output length (%v) aren't the same", len(unsorted), len(sorted))
+		t.Errorf("The input length (%v) and output length (%v) aren't the same", len(unsorted), len(sorted))
 	}
 
 	for i := range sorted {
 		if sorted[i] != unsorted[i] {
-			t.Error("The value at %v isn't the same. Trusted: %v, NaiveSort: %v", i, unsorted[i], sorted[i])
+			t.Errorf("The value at %v isn't the same. Trusted: %v, Sort: %v", i, unsorted[i], sorted[i])
 		}
 	}
 }

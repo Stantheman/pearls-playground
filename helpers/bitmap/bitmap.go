@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"math"
+	"math/big"
 	"os"
 	"strconv"
 )
@@ -18,7 +19,7 @@ constraints: at most, 1000 16bit words
 
 This is a very naive answer to the final discussed solution, in which the programmer
 found 27000 total free bits to store each integer's status. It does not actually
-use bit math yet, so the savings aren't there yet*/
+use bit math yet, so the savings aren't there yet.*/
 func NaiveSort(input_fn, output_fn string, length int) (err error) {
 
 	if length < 0 {
@@ -67,7 +68,9 @@ func NaiveSort(input_fn, output_fn string, length int) (err error) {
 This is the first real problem from the book and asks how we'd accomplish the task
 with less memory than the input size. The answer is to make multiple passes over the file,
 filling the bitmap each pass, then dumping to a file.
-This takes passes * input time, but does it with input/passes space */
+This takes passes * input time, but does it with input/passes space
+
+In reality this can be NaiveSort where length = avail, but I wrote NaiveSort first*/
 func LimitedSort(input_fn, output_fn string, length, avail int) (err error) {
 
 	if length < 0 {
@@ -131,5 +134,108 @@ func LimitedSort(input_fn, output_fn string, length, avail int) (err error) {
 			return err
 		}
 	}
+	return nil
+}
+
+/* Problem #2 discusses the implementation of bitmaps. You can use a language's builtin
+support for bitmap operations, or implement your own with bitwise operations.
+
+It ends by asking how you'd implement these answers in COBOL and Pascal, which I'm skipping.
+
+The goal here is to use math.big's bitmap support to answer problem 1. */
+func BitSort(input_fn, output_fn string, length_b, avail_b int) (err error) {
+
+	if length_b < 0 {
+		return fmt.Errorf("Length must be greater than 0: %v", length_b)
+	}
+
+	if avail_b < 0 {
+		return fmt.Errorf("Avail must be greater than 0: %v\n", avail_b)
+	}
+
+	// open the input file for reading
+	in, err := os.Open(input_fn)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	// same for output
+	out, err := os.Create(output_fn)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	writer := bufio.NewWriter(out)
+	passes := int(math.Ceil(float64(length_b) / float64(avail_b)))
+	// fmt.Printf("passes is %v\n", passes)
+
+	for i := 0; i < passes; i++ {
+
+		// if we have 100 bits available, we need ceil(100/64) = ~2 int64s to work with
+		bits := make([]*big.Int, int(math.Ceil(float64(avail_b)/64.0)))
+		for i := range bits {
+			bits[i] = big.NewInt(0)
+		}
+
+		// fmt.Printf("We made %v bits!\n", len(bits))
+
+		scanner := bufio.NewScanner(in)
+		min, max := i*avail_b, i*avail_b+avail_b
+
+		// fmt.Printf("min: %v max: %v\n", min, max)
+		// fmt.Printf("on pass %v\n", i)
+
+		for scanner.Scan() {
+			// consume the number
+			val, err := strconv.ParseInt(scanner.Text(), 10, 32)
+			if err != nil {
+				return err
+			}
+
+			// in the first pass, we only want to look at integers that are 0 < x < availableRam
+			if int(val) >= min && int(val) < max {
+				/* If we have 100 bits per pass and we see 125, we're on the second pass, so min = 1*100 = 100
+				125-100 = 25. we're in the 25th bit slot, and 25/64 = 0, so the first available integer in the array*/
+				position := (int(val) - min) / 64
+				/* If we have 10 bits per pass and see 68, it means we're on the 6th pass, which makes min = 6*10 = 60
+				position is (68 - 60) / 64= integer 0. 68 - 0 - 60 = 8th bit */
+				bit := int(val) - (64 * position) - min
+				//fmt.Println(position, bit, val)
+				bits[position].SetBit(bits[position], bit, 1)
+			}
+		}
+
+		//now that we've looped over the file, let's append the bitmap knowledge to our file
+		for i, v := range bits {
+			for j := 0; j < 64; j++ {
+				if v.Bit(j) == 1 {
+					/* If we have 20 bits to play with and this is the second loop, we're looking at 20-39
+					20 bits = 1 64-bit integer to hold data. if bit 10 is set, we're at (0 * 64 + 10 + 20) = 30th bit*/
+					value := i*64 + j + min
+					_, err := fmt.Fprintf(writer, "%v\n", value)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+		writer.Flush()
+
+		// get to the beginning of the file for each full pass
+		_, err := in.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+
+}
+
+/* The second half of the second question asks about bitwise operations. This function
+should provide the same functionality as BitSort without using the convenience functions
+from math/big */
+func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err error) {
 	return nil
 }

@@ -6,6 +6,10 @@ import (
 )
 
 func main() {
+	// need to improve IO access method in n-pass sorts
+	// need to probably improve the new random method
+	// add more tests for common edge cases to make it make more sense
+	// check out go test coverage
 	question3()
 }
 

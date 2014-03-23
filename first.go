@@ -10,6 +10,7 @@ func main() {
 	// need to probably improve the new random method
 	// add more tests for common edge cases to make it make more sense
 	// check out go test coverage
+	// add a version that uses go routines to emit the next number
 	question3()
 }
 

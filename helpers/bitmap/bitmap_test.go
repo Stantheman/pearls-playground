@@ -28,6 +28,9 @@ const (
 	available  = inputSize / 10
 )
 
+type sorter func(string, string, int, int) error
+
+// BenchmarkGoSort runs as a control to compare sort speeds
 func BenchmarkGoSort(b *testing.B) {
 	setup()
 	b.ResetTimer()
@@ -41,142 +44,103 @@ func BenchmarkGoSort(b *testing.B) {
 	}
 }
 
-func TestNaiveSort(t *testing.T) {
-	setup()
+// this allows for meta-tests
+var sorts = map[string]sorter{
+	"NaiveSort":        NaiveSort,
+	"BitSort":          BitSort,
+	"LimitedSort":      LimitedSort,
+	"BitSortPrimative": BitSortPrimative,
+}
 
-	err := NaiveSort(inputFile, outputFile, inputSize)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err = compareInputAndOutput(); err != nil {
-		t.Error(err)
-	}
-
-	breakingSetup()
-
-	err = NaiveSort(inputFile, outputFile, inputSize)
-	if err == nil {
-		t.Error("Sort accepted bad input without returning error")
+/* TestSort loops over the available sorts and runs test functions
+with all the required scaffolding. This is kind of anti-testing
+as far as Go is concerned...not sure if I'm proud of this or will end up reverting*/
+func TestSort(t *testing.T) {
+	for name, function := range sorts {
+		if err := testSort(function)(t); err != nil {
+			t.Errorf("%v: %v", name, err)
+		}
+		if err := testBrokenSort(function)(t); err != nil {
+			t.Errorf("%v: %v", name, err)
+		}
 	}
 }
 
-func BenchmarkNaiveSort(b *testing.B) {
-	setup()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		NaiveSort(inputFile, outputFile, inputSize)
+/* testSort returns a function that performs a basic test on the requested sort method
+It generates an input file, sorts, then compares to Go sort to make sure it's sane*/
+func testSort(f sorter) func(*testing.T) error {
+	return func(t *testing.T) (err error) {
+		setup()
+
+		err = f(inputFile, outputFile, inputSize, available)
+		if err != nil {
+			return err
+		}
+
+		if err = compareInputAndOutput(); err != nil {
+			return err
+		}
+		return nil
 	}
 }
 
-func TestLimitedSort(t *testing.T) {
-	setup()
+/* testBrokenSort returns a function that generates a crappy input file
+and makes sure that the sort barfs */
+func testBrokenSort(f sorter) func(*testing.T) error {
+	return func(t *testing.T) (err error) {
+		breakingSetup()
 
-	err := LimitedSort(inputFile, outputFile, inputSize, available)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err = compareInputAndOutput(); err != nil {
-		t.Error(err)
-	}
-
-	breakingSetup()
-
-	err = LimitedSort(inputFile, outputFile, inputSize, available)
-	if err == nil {
-		t.Error("Sort accepted bad input without returning error")
+		err = f(inputFile, outputFile, inputSize, available)
+		if err == nil {
+			return fmt.Errorf("Sort accepted bad input without returning error")
+		}
+		return nil
 	}
 }
 
-func BenchmarkLimitedSort(b *testing.B) {
-	setup()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		LimitedSort(inputFile, outputFile, inputSize, available)
+/* TestBenchmarkSorts is probably something I actually feel guilty about. I wanted meta
+benchmarks without copying and pasting code. The Go benchmark code doesn't like benchmarks
+within benchmarks. I wanted to be able to still run "go test" and get individual
+benchmark lines, as if each function was defined on its own. The workaround is to
+name the function Test* so no benchmark is set up, then run through them*/
+func TestBenchmarkSorts(t *testing.T) {
+	for name, function := range sorts {
+		// test sorts with default knowledge
+		result := testing.Benchmark(benchmarkSort(function))
+		t.Logf("%v: %v\t%v\n", name, result.String(), result.MemString())
+
+		// test sorts with one pass
+		result = testing.Benchmark(benchmarkSortOnePass(function))
+		t.Logf("%v, one pass: %v\t%v\n", name, result.String(), result.MemString())
 	}
 }
 
-func BenchmarkLimitedSortOnePass(b *testing.B) {
-	setup()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		LimitedSort(inputFile, outputFile, inputSize, inputSize)
+/* benchmarkSort generates a function that runs a benchmark on a given sort*/
+func benchmarkSort(f sorter) func(*testing.B) {
+	return func(b *testing.B) {
+		setup()
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			f(inputFile, outputFile, inputSize, available)
+		}
 	}
 }
 
-func TestBitSort(t *testing.T) {
-	setup()
-
-	err := BitSort(inputFile, outputFile, inputSize, available)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err = compareInputAndOutput(); err != nil {
-		t.Error(err)
-	}
-
-	breakingSetup()
-
-	err = BitSort(inputFile, outputFile, inputSize, available)
-	if err == nil {
-		t.Error("Sort accepted bad input without returning error")
+/* benchmarkSortOnePass generates a function that benchmarks the given sort,
+providing the sort with enough memory to sort in one pass*/
+func benchmarkSortOnePass(f sorter) func(*testing.B) {
+	return func(b *testing.B) {
+		setup()
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			f(inputFile, outputFile, inputSize, inputSize)
+		}
 	}
 }
 
-func BenchmarkBitSort(b *testing.B) {
-	setup()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		BitSort(inputFile, outputFile, inputSize, available)
-	}
-}
-
-func BenchmarkBitSortOnePass(b *testing.B) {
-	setup()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		BitSort(inputFile, outputFile, inputSize, inputSize)
-	}
-}
-
-func TestBitSortPrimative(t *testing.T) {
-	setup()
-
-	err := BitSortPrimative(inputFile, outputFile, inputSize, available)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if err = compareInputAndOutput(); err != nil {
-		t.Error(err)
-	}
-
-	breakingSetup()
-
-	err = BitSortPrimative(inputFile, outputFile, inputSize, available)
-	if err == nil {
-		t.Error("Sort accepted bad input without returning error")
-	}
-}
-
-func BenchmarkBitSortPrimative(b *testing.B) {
-	setup()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		BitSortPrimative(inputFile, outputFile, inputSize, available)
-	}
-}
-
-func BenchmarkBitSortPrimativeOnePass(b *testing.B) {
-	setup()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		BitSortPrimative(inputFile, outputFile, inputSize, inputSize)
-	}
-}
-
+// setup create a suitable input file for sort consumption
 func setup() {
 	integers := random.GenerateUniqueRandomIntegers(inputSize)
 
@@ -190,12 +154,12 @@ func setup() {
 /* breakingSetup creates artificially bad input
 problem 6
 - what if there's more than one integer in the input?
-- what if the input is > N or < 1
+- what if the input is > N or < 0
 - what should it do?
 */
 func breakingSetup() {
 	// 10-1 with two 7s
-	integers := []int{10, 9, 8, 7, 7, 6, 5, 4, 3, 2, 1}
+	integers := []int{10, 9, 8, 7, 7, 6, 5, 4, 3, 2, 1, -3}
 
 	err := writeIntSlice(integers, inputFile, 1)
 	if err != nil {
@@ -204,6 +168,7 @@ func breakingSetup() {
 	}
 }
 
+/* compareIinputAndOutput is run after a sort to make sure things actually got sorted*/
 func compareInputAndOutput() (err error) {
 	// read the before and after files  to compare
 	unsorted, err := readIntSlice(inputFile)
@@ -236,6 +201,7 @@ func compareInputAndOutput() (err error) {
 	return nil
 }
 
+/* writeIntSlice is a weird way of writing integers out. Probably should have used more bufio love*/
 func writeIntSlice(integers []int, filename string, truncate int) (err error) {
 
 	var writeFH *os.File
@@ -269,6 +235,7 @@ func writeIntSlice(integers []int, filename string, truncate int) (err error) {
 	return nil
 }
 
+/* readIntSlice consumes the file in the way we expect, integers followed by newlines*/
 func readIntSlice(input_fn string) (bits []int, err error) {
 	in, err := os.Open(input_fn)
 	if err != nil {

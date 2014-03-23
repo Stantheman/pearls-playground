@@ -47,10 +47,9 @@ constraints: at most, 1000 16bit words
 This is a very naive answer to the final discussed solution, in which the programmer
 found 27000 total free bits to store each integer's status. It does not actually
 use bit math yet, so the savings aren't there yet.*/
-func NaiveSort(input_fn, output_fn string, length int) (err error) {
+func NaiveSort(input_fn, output_fn string, length, avail int) (err error) {
 
-	// NaiveSort is special since it's the only function without the need for available ram
-	in, out, err := sortSetup(input_fn, output_fn, length, 1)
+	in, out, err := sortSetup(input_fn, output_fn, length, avail)
 	if err != nil {
 		return err
 	}

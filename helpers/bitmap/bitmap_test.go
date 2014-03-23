@@ -49,7 +49,16 @@ func TestNaiveSort(t *testing.T) {
 		t.Error(err)
 	}
 
-	compareInputAndOutput(t)
+	if err = compareInputAndOutput(); err != nil {
+		t.Error(err)
+	}
+
+	breakingSetup()
+
+	err = NaiveSort(inputFile, outputFile, inputSize)
+	if err == nil {
+		t.Error("Sort accepted bad input without returning error")
+	}
 }
 
 func BenchmarkNaiveSort(b *testing.B) {
@@ -67,7 +76,17 @@ func TestLimitedSort(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	compareInputAndOutput(t)
+
+	if err = compareInputAndOutput(); err != nil {
+		t.Error(err)
+	}
+
+	breakingSetup()
+
+	err = LimitedSort(inputFile, outputFile, inputSize, available)
+	if err == nil {
+		t.Error("Sort accepted bad input without returning error")
+	}
 }
 
 func BenchmarkLimitedSort(b *testing.B) {
@@ -93,7 +112,17 @@ func TestBitSort(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	compareInputAndOutput(t)
+
+	if err = compareInputAndOutput(); err != nil {
+		t.Error(err)
+	}
+
+	breakingSetup()
+
+	err = BitSort(inputFile, outputFile, inputSize, available)
+	if err == nil {
+		t.Error("Sort accepted bad input without returning error")
+	}
 }
 
 func BenchmarkBitSort(b *testing.B) {
@@ -119,7 +148,17 @@ func TestBitSortPrimative(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	compareInputAndOutput(t)
+
+	if err = compareInputAndOutput(); err != nil {
+		t.Error(err)
+	}
+
+	breakingSetup()
+
+	err = BitSortPrimative(inputFile, outputFile, inputSize, available)
+	if err == nil {
+		t.Error("Sort accepted bad input without returning error")
+	}
 }
 
 func BenchmarkBitSortPrimative(b *testing.B) {
@@ -148,35 +187,53 @@ func setup() {
 	}
 }
 
-func compareInputAndOutput(t *testing.T) {
+/* breakingSetup creates artificially bad input
+problem 6
+- what if there's more than one integer in the input?
+- what if the input is > N or < 1
+- what should it do?
+*/
+func breakingSetup() {
+	// 10-1 with two 7s
+	integers := []int{10, 9, 8, 7, 7, 6, 5, 4, 3, 2, 1}
+
+	err := writeIntSlice(integers, inputFile, 1)
+	if err != nil {
+		fmt.Printf("Couldn't write out integers to file %v: %v", inputFile, err)
+		return
+	}
+}
+
+func compareInputAndOutput() (err error) {
 	// read the before and after files  to compare
 	unsorted, err := readIntSlice(inputFile)
 	if err != nil {
-		t.Error(err)
+		return err
 	}
 
-	sorted, _ := readIntSlice(outputFile)
+	sorted, err := readIntSlice(outputFile)
 	if err != nil {
-		t.Error(err)
+		return err
 	}
 
 	// check that the output is actually sorted
 	if !sort.IntsAreSorted(sorted) {
-		t.Error("The output isn't sorted")
+		return fmt.Errorf("The output isn't sorted")
 	}
 
 	// sort the input ints with a trusted sort to compare
 	sort.Ints(unsorted)
 
 	if len(unsorted) != len(sorted) {
-		t.Errorf("The input length (%v) and output length (%v) aren't the same", len(unsorted), len(sorted))
+		return fmt.Errorf("The input length (%v) and output length (%v) aren't the same", len(unsorted), len(sorted))
 	}
 
 	for i := range sorted {
 		if sorted[i] != unsorted[i] {
-			t.Errorf("The value at %v isn't the same. Trusted: %v, Sort: %v", i, unsorted[i], sorted[i])
+			return fmt.Errorf("The value at %v isn't the same. Trusted: %v, Sort: %v", i, unsorted[i], sorted[i])
 		}
 	}
+	return nil
 }
 
 func writeIntSlice(integers []int, filename string, truncate int) (err error) {

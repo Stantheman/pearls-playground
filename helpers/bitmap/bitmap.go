@@ -66,6 +66,15 @@ func NaiveSort(input_fn, output_fn string, length int) (err error) {
 		if err != nil {
 			return fmt.Errorf("%v isn't a valid 32 bit integer: %v\n", val, err)
 		}
+		if val < 0 {
+			return fmt.Errorf("%v can't be less than 1\n", val)
+		}
+		if int(val) > length {
+			return fmt.Errorf("%v can't be larger than %v\n", val, length)
+		}
+		if bits[val] == 1 {
+			return fmt.Errorf("Duplicate input: we've already seen %v\n", val)
+		}
 		bits[val] = 1
 	}
 
@@ -114,8 +123,18 @@ func LimitedSort(input_fn, output_fn string, length, avail int) (err error) {
 				return err
 			}
 
+			if val < 0 {
+				return fmt.Errorf("%v can't be less than 1\n", val)
+			}
+			if int(val) > length {
+				return fmt.Errorf("%v can't be larger than %v\n", val, length)
+			}
+
 			// in the first pass, we only want to look at integers that are 0 < x < availableRam
 			if int(val) >= min && int(val) < max {
+				if bits[int(val)-min] == 1 {
+					return fmt.Errorf("Duplicate input: we've already seen %v\n", val)
+				}
 				bits[int(val)-min] = 1
 			}
 		}
@@ -181,6 +200,12 @@ func BitSort(input_fn, output_fn string, length_b, avail_b int) (err error) {
 			if err != nil {
 				return err
 			}
+			if val < 0 {
+				return fmt.Errorf("%v can't be less than 1\n", val)
+			}
+			if int(val) > length_b {
+				return fmt.Errorf("%v can't be larger than %v\n", val, length_b)
+			}
 
 			// in the first pass, we only want to look at integers that are 0 < x < availableRam
 			if int(val) >= min && int(val) < max {
@@ -191,6 +216,9 @@ func BitSort(input_fn, output_fn string, length_b, avail_b int) (err error) {
 				position is (68 - 60) / 64= integer 0. 68 - 0 - 60 = 8th bit */
 				bit := int(val) - (64 * position) - min
 				//fmt.Println(position, bit, val)
+				if bits[position].Bit(bit) == 1 {
+					return fmt.Errorf("Duplicate input: we've already seen %v\n", val)
+				}
 				bits[position].SetBit(bits[position], bit, 1)
 			}
 		}
@@ -250,6 +278,12 @@ func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err er
 			if err != nil {
 				return err
 			}
+			if val < 0 {
+				return fmt.Errorf("%v can't be less than 1\n", val)
+			}
+			if int(val) > length_b {
+				return fmt.Errorf("%v can't be larger than %v\n", val, length_b)
+			}
 
 			// in the first pass, we only want to look at integers that are 0 < x < availableRam
 			if int(val) >= min && int(val) < max {
@@ -260,6 +294,9 @@ func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err er
 				position is (68 - 60) / 64= integer 0. 68 - 0 - 60 = 8th bit */
 				bit := int(val) - (position << 6) - min
 				// fmt.Printf("pos is %v, bit is %v, value is %v\n", position, bit, val)
+				if (bits[position] & (1 << uint(bit))) > 0 {
+					return fmt.Errorf("Duplicate input: we've already seen %v\n", val)
+				}
 				bits[position] = bits[position] | 1<<uint(bit)
 			}
 		}

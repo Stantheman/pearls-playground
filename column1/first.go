@@ -1,4 +1,4 @@
-// Trying Programming Pearls's first example
+// Package Column1 contains notes for questions from Column1
 package main
 
 import (
@@ -11,7 +11,8 @@ func main() {
 	// add more tests for common edge cases to make it make more sense
 	// check out go test coverage
 	// add a version that uses go routines to emit the next number
-	question3()
+	//question3()
+	tester()
 }
 
 func question3() {
@@ -43,4 +44,27 @@ BenchmarkLimitedSort              50                                           3
 BenchmarkBitSort                  50                                           34806673  ns/op  861037  B/op  100358  allocs/op
 BenchmarkBitSortPrimative         50                                           34283723  ns/op  848260  B/op  100038  allocs/op
 ` + asterisks)
+}
+
+func tester() {
+	// 11111 - five ones
+	var mask uint8 = 31
+	fmt.Printf("%b\n", mask)
+
+	// 100
+	var third uint8 = 1 << 2
+
+	fmt.Printf("%b\n", third)
+
+	//  turn off the third bit
+	fmt.Printf("turn off the third bit: %b\n", mask&^third)
+
+	var third_and_fourth uint8 = 12
+	fmt.Printf("%b\n", third_and_fourth)
+
+	fmt.Printf("turn off third and fourth bit: %b\n", mask & ^third_and_fourth)
+
+	fmt.Printf("turn off 2-4: %b\n", mask & ^uint8(14))
+	fmt.Printf("make 2-4 010: %b\n", mask & ^uint8(14) | uint8(2<<1))
+
 }

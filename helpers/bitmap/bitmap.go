@@ -1,5 +1,4 @@
-/* implements a minimal bitmap structure with sort
-for Programming Pearls - problem 1 */
+//Package bitmap implements several bitmap-based sorts
 package bitmap
 
 import (

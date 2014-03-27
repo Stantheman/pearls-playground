@@ -1,4 +1,9 @@
-//Package bitmap implements several bitmap-based sorts
+// Package bitmap implements several bitmap-based sorts
+//
+// Each of these functions take an input file with newline-delimited integers < length.
+// It iterates over the input, does its sort, and then dumps them to a file. Most also use
+// an "avail" amount of space -- looping multiple times if the available space is less
+// than the length of numbers.
 package bitmap
 
 import (
@@ -37,15 +42,12 @@ func sortSetup(input_fn, output_fn string, length, avail int) (in, out *os.File,
 	return
 }
 
-/* The precise problem statement from Programming Pearls. X = 27000:
-input: a file containing at most X integers in the range 1..x
- it is fatal if there are duplicated, and no other data is associated with the integer
-output: a sorted list in increasing order of the input integers
-constraints: at most, 1000 16bit words
-
-This is a very naive answer to the final discussed solution, in which the programmer
-found 27000 total free bits to store each integer's status. It does not actually
-use bit math yet, so the savings aren't there yet.*/
+// NaiveSort sorts using a slice of integers to store a single bit.
+//
+// NaiveSort is a helplessly weak attempt at mimicking the spirit of the first column of Programming Pearls.
+// It was my first pass at learning Go and mostly kept around for prosterity.
+//
+// NaiveSort doesn't consider limited memory.
 func NaiveSort(input_fn, output_fn string, length, avail int) (err error) {
 
 	in, out, err := sortSetup(input_fn, output_fn, length, avail)
@@ -89,13 +91,11 @@ func NaiveSort(input_fn, output_fn string, length, avail int) (err error) {
 	return nil
 }
 
-/* LimitedSort takes a filename and a length of memory available.
-This is the first real problem from the book and asks how we'd accomplish the task
-with less memory than the input size. The answer is to make multiple passes over the file,
-filling the bitmap each pass, then dumping to a file.
-This takes passes * input time, but does it with input/passes space
-
-In reality this can be NaiveSort where length = avail, but I wrote NaiveSort first*/
+// LimitedSort is NaiveSort with memory constraints.
+// This is the first real problem from the book and asks how we'd accomplish the task
+// with less memory than the input size. The answer is to make multiple passes over the file,
+// filling the bitmap each pass, then dumping to a file.
+// This takes passes * input time, but does it with input/passes space
 func LimitedSort(input_fn, output_fn string, length, avail int) (err error) {
 
 	in, out, err := sortSetup(input_fn, output_fn, length, avail)
@@ -157,12 +157,11 @@ func LimitedSort(input_fn, output_fn string, length, avail int) (err error) {
 	return nil
 }
 
-/* Problem #2 discusses the implementation of bitmaps. You can use a language's builtin
-support for bitmap operations, or implement your own with bitwise operations.
-
-It ends by asking how you'd implement these answers in COBOL and Pascal, which I'm skipping.
-
-The goal here is to use math.big's bitmap support to answer problem 1. */
+// BitSort uses math/big's bitwise manipulation functions to sort an input file and write to an output file
+// Problem #2 discusses the implementation of bitmaps. You can use a language's builtin
+// support for bitmap operations, or implement your own with bitwise operations.
+//
+// It ends by asking how you'd implement these answers in COBOL and Pascal, which I'm skipping.
 func BitSort(input_fn, output_fn string, length_b, avail_b int) (err error) {
 
 	in, out, err := sortSetup(input_fn, output_fn, length_b, avail_b)
@@ -247,7 +246,7 @@ func BitSort(input_fn, output_fn string, length_b, avail_b int) (err error) {
 
 }
 
-/* BitSortPrimative uses bitwise operations instead of math/big to sort */
+// BitSortPrimative uses Go's builtin bitwise operations instead of math/big to sort
 func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err error) {
 
 	in, out, err := sortSetup(input_fn, output_fn, length_b, avail_b)

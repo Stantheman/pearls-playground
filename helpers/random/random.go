@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// GenerateIncreasingRandomIntegers generates a list of randomly increasing integers with length count
-// the list includes no duplicates
+// GenerateIncreasingRandomIntegers generates a list of randomly increasing integers with length "count".
+// The list includes no duplicates.
 func GenerateIncreasingRandomIntegers(count int) (list []int) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	list = make([]int, count)
@@ -22,7 +22,7 @@ func GenerateIncreasingRandomIntegers(count int) (list []int) {
 	return
 }
 
-// GenerateUniqueRandomIntegers generates a list of random unique integers
+// GenerateUniqueRandomIntegers generates a list of random unique integers.
 func GenerateUniqueRandomIntegers(count int) (list sort.IntSlice) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	list = make([]int, count)
@@ -42,7 +42,7 @@ func GenerateUniqueRandomIntegers(count int) (list sort.IntSlice) {
 	return
 }
 
-// GenerateLimitedRandomIntegers generates a list of random integers that occur up 0..N times
+// GenerateLimitedRandomIntegers generates a list of random integers that occur up 0..N times.
 func GenerateLimitedRandomIntegers(count, occur int) (list sort.IntSlice) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// this is a horrifying way of making an always-growing list that's probably terrible

@@ -172,20 +172,23 @@ func BitSort(input_fn, output_fn string, length_b, avail_b int) (err error) {
 	defer out.Close()
 
 	writer := bufio.NewWriter(out)
+
+	// if we have 100 bits available, we need ceil(100/64) = ~2 int64s to work with
+	bits := make([]*big.Int, int(math.Ceil(float64(avail_b)/64.0)))
+	for i := range bits {
+		bits[i] = big.NewInt(0)
+	}
 	passes := int(math.Ceil(float64(length_b) / float64(avail_b)))
-	// fmt.Printf("passes is %v\n", passes)
 
 	for i := 0; i < passes; i++ {
 
-		// if we have 100 bits available, we need ceil(100/64) = ~2 int64s to work with
-		bits := make([]*big.Int, int(math.Ceil(float64(avail_b)/64.0)))
 		for i := range bits {
-			bits[i] = big.NewInt(0)
+			bits[i].SetUint64(0)
 		}
+		scanner := bufio.NewScanner(in)
 
 		// fmt.Printf("We made %v bits!\n", len(bits))
 
-		scanner := bufio.NewScanner(in)
 		min, max := i*avail_b, i*avail_b+avail_b
 
 		// fmt.Printf("min: %v max: %v\n", min, max)
@@ -257,16 +260,16 @@ func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err er
 	defer out.Close()
 	writer := bufio.NewWriter(out)
 
+	// if we have 100 bits available, we need ceil(100/64) = ~2 int64s to work with
+	bits := make([]uint64, int(math.Ceil(float64(avail_b)/64.0)))
 	passes := int(math.Ceil(float64(length_b) / float64(avail_b)))
 	for i := 0; i < passes; i++ {
 
-		// if we have 100 bits available, we need ceil(100/64) = ~2 int64s to work with
-		bits := make([]uint64, int(math.Ceil(float64(avail_b)/64.0)))
+		scanner := bufio.NewScanner(in)
 		for i := range bits {
 			bits[i] = 0
 		}
 
-		scanner := bufio.NewScanner(in)
 		min, max := i*avail_b, i*avail_b+avail_b
 
 		for scanner.Scan() {

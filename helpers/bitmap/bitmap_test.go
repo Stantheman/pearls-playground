@@ -129,7 +129,7 @@ func TestBenchmarkSorts(t *testing.T) {
 
 		// test sorts with one pass
 		result = testing.Benchmark(benchmarkSortOnePass(function))
-		t.Logf("%v, one pass: %v\t%v\n", name, result.String(), result.MemString())
+		t.Logf("%v,one_pass: %v\t%v\n", name, result.String(), result.MemString())
 	}
 }
 

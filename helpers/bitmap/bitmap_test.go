@@ -66,6 +66,24 @@ func TestSort(t *testing.T) {
 	}
 }
 
+func TestSortNonUnique(t *testing.T) {
+	integers := random.GenerateLimitedRandomIntegers(inputSize, 10)
+
+	err := writeIntSlice(integers, inputFile, 1)
+	if err != nil {
+		fmt.Printf("Couldn't write out integers to file %v: %v", inputFile, err)
+		return
+	}
+	err = SortNonUnique(inputFile, outputFile, inputSize, available, 10)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if err = compareInputAndOutput(); err != nil {
+		t.Error(err)
+	}
+}
+
 /* testSort returns a function that performs a basic test on the requested sort method
 It generates an input file, sorts, then compares to Go sort to make sure it's sane*/
 func testSort(f sorter) func(*testing.T) error {

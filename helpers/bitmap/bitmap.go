@@ -333,107 +333,105 @@ up to 2^64*/
 // this thing needs way more work and i'm gonna skip for now
 // when i come back to this, remember,
 // "When in doubt, use brute force" ~Ken Thompson
-// func SortNonUnique(input_fn, output_fn string, length_b, avail_b, occur int) (err error) {
+func SortNonUnique(input_fn, output_fn string, length_b, avail_b, occur int) (err error) {
 
-// 	// get set up
-// 	if occur <= 0 {
-// 		return fmt.Errorf("occur must be greater than 0: %v\n", occur)
-// 	}
-// 	in, out, err := sortSetup(input_fn, output_fn, length_b, avail_b)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer in.Close()
-// 	defer out.Close()
-// 	writer := bufio.NewWriter(out)
+	// get set up
+	if occur <= 0 {
+		return fmt.Errorf("occur must be greater than 0: %v\n", occur)
+	}
+	in, out, err := sortSetup(input_fn, output_fn, length_b, avail_b)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	defer out.Close()
+	writer := bufio.NewWriter(out)
 
-// 	/* need to figure out how many ints we can do per run.
-// 	if an integer can occur 10 times per pass, you need 4 bits to store that knowledge
-// 	if you have 100 bits available per run, you can do 100/4 = 25 integers per pass.
+	/* figure out how much memory we can safely work with.
+	if we're given 1000 bytes, use the closest (lower) power of 2 to put our 64-bit ints in*/
+	avail_b = 1 << uint(math.Log2(float64(avail_b)))
 
-// 	figure out the nearest upper power of two so we know how many integers
-// 	we can stuff into a 64bit slot at a time. bit twiddling hacks has a cool trick
-// 	to do this, but the easily accessible version is to take log base 2 of the number and add 1.
-// 	log 2 69 = 6.xxx, =~ 7
-// 	*/
-// 	size_b := int(math.Log2(occur)) + 1
-// 	if size_b > 64 {
-// 		return fmt.Errorf("occur must be less than 2^64, size is %v\n", size_b)
-// 	}
-// 	valPerSlot := 64 / size
-// 	// if we had 10 occurences, that's 4 bits per value, 16 values per 64bit int
-// 	// if we have 128 bits available, we can do 32 values at a time (avail_b/size_b).
-// 	valPerRun := avail_b / size_b
-// 	slots := avail_b / 64
-// 	// if we can do 32 values per run, we need length/valPerRun passes
-// 	passes := length_b / valPerRun
+	/* need to figure out how many ints we can do per run.
+	if an integer can occur 10 times per pass, you need 4 bits to store that knowledge
+	if you have 100 bits available per run, you can do 100/4 = 25 integers per pass.
 
-// 	for i := 0; i < passes; i++ {
+	figure out the nearest upper power of two so we know how many integers
+	we can stuff into a 64bit slot at a time. bit twiddling hacks has a cool trick
+	to do this, but the easily accessible version is to take log base 2 of the number and round up.
+	log 2 69 = 6.xxx, =~ 7
+	*/
+	var size_b uint64 = uint64(math.Log2(float64(occur))) + 1
+	if size_b > 64 {
+		return fmt.Errorf("occur must be less than 2^64, size is %v\n", size_b)
+	}
 
-// 		// if we have 128 bits available, we need ceil(128/64) = 2 int64s to work with
-// 		bits := make([]uint64, slots)
-// 		for i := range bits {
-// 			bits[i] = 0
-// 		}
+	// if we had 10 occurences, that's 4 bits per value, 16 values per 64bit int
+	// if we have 128 bits available, we can do 32 values at a time (avail_b/size_b).
+	valPerRun := uint64(avail_b) / size_b
+	slots := avail_b / 64
+	// if we can do 32 values per run, we need length/valPerRun passes
+	passes := math.Ceil(float64(length_b) / float64(valPerRun))
 
-// 		scanner := bufio.NewScanner(in)
-// 		min, max := i*valPerRun, i*valPerRun+valPerRun
+	for i := 0; i < int(passes); i++ {
 
-// 		for scanner.Scan() {
-// 			// consume the number
-// 			val, err := strconv.ParseInt(scanner.Text(), 10, 32)
-// 			if err != nil {
-// 				return err
-// 			}
+		// if we have 128 bits available, we need ceil(128/64) = 2 int64s to work with
+		bits := make([]uint64, slots)
+		for i := range bits {
+			bits[i] = 0
+		}
 
-// 			// in the first pass, we only want to look at integers that are 0 < x < valPerSlot
-// 			if int(val) >= min && int(val) < max {
-// 				slotNumber := (int(val) - min) >> 6
-// 				// if the val is 3 and has 4 bits per val, we want to kick in at bit 12
-// 				bitStart := val * size_b
-// 				currentVal := bits[slotNumber] & ((1 << size_b - 1) << bitStart) >> bitStart
+		scanner := bufio.NewScanner(in)
+		min, max := i*int(valPerRun), i*int(valPerRun)+int(valPerRun)
+		var bitmask uint64 = 1<<size_b - 1
 
-// 				if (currentVal == (1<<size_b-1)) {
-// 					return fmt.Errorf("Too many %v values seen, bailing\n", val)
-// 				}
-// 				currentVal++
+		for scanner.Scan() {
+			// consume the number
+			val, err := strconv.ParseInt(scanner.Text(), 10, 32)
+			if err != nil {
+				return err
+			}
 
-// 				bits[slotNumber] = bits[slotNumber] |
+			// in the first pass, we only want to look at integers that are 0 < x < valPerSlot
+			if int(val) >= min && int(val) < max {
+				//	fmt.Printf("%v is >= than %v and less than %v\n", val, min, max)
+				slotNumber := ((int(val) - int(min)) * int(size_b)) >> 6
+				// if the val is 3 and has 4 bits per val, we want to kick in at bit 12
+				bitStart := ((uint64(val) - uint64(min)) * size_b) - (uint64(slotNumber) * 64)
+				currentVal := bits[slotNumber] & ((1<<size_b - 1) << bitStart) >> bitStart
 
-// 				/* we need to figure out what the current value is and increment*/
+				//fmt.Printf("The slot number for %v is: %v, the bitstart is %v and the current value is %v\n", val, slotNumber, bitStart, currentVal)
+				if currentVal == (1<<size_b - 1) {
+					return fmt.Errorf("Too many %v values seen, bailing\n", val)
+				}
+				currentVal++
 
-// 				/* If we have 100 bits per pass and we see 125, we're on the second pass, so min = 1*100 = 100
-// 				125-100 = 25. we're in the 25th bit slot, and 25/64 = 0, so the first available integer in the array*/
+				bits[slotNumber] = bits[slotNumber] & ^(bitmask<<bitStart) | currentVal<<bitStart
+				//fmt.Printf("%b\n", bits[slotNumber])
+			}
+		}
 
-// 				/* If we have 10 bits per pass and see 68, it means we're on the 6th pass, which makes min = 6*10 = 60
-// 				position is (68 - 60) / 64= integer 0. 68 - 0 - 60 = 8th bit */
-// 				bit := int(val) - (position << 6) - min
-// 				// fmt.Printf("pos is %v, bit is %v, value is %v\n", position, bit, val)
-// 				bits[position] = bits[position] | 1<<uint(bit)
-// 			}
-// 		}
+		//now that we've looped over the file, let's append the bitmap knowledge to our file
+		for i, v := range bits {
+			for j := 0; j < 64; j += 4 {
+				if calculated := v & (bitmask << uint(j)) >> uint64(j); calculated > 0 {
+					//	fmt.Printf("calculated is %v\n", calculated)
+					for k := 0; uint64(k) < calculated; k++ {
+						value := uint64(i)*64/size_b + uint64(min) + (uint64(j) / 4)
+						_, err := fmt.Fprintf(writer, "%v\n", value)
+						if err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+		writer.Flush()
 
-// 		//now that we've looped over the file, let's append the bitmap knowledge to our file
-// 		for i, v := range bits {
-// 			for j := 0; j < 64; j++ {
-// 				if calculated := v & (1 << uint(j)); calculated > 0 {
-// 					/* If we have 20 bits to play with and this is the second loop, we're looking at 20-39
-// 					20 bits = 1 64-bit integer to hold data. if bit 10 is set, we're at (0 * 64 + 10 + 20) = 30th bit*/
-// 					value := i*64 + j + min
-// 					_, err := fmt.Fprintf(writer, "%v\n", value)
-// 					if err != nil {
-// 						return err
-// 					}
-// 				}
-// 			}
-// 		}
-// 		writer.Flush()
-
-// 		// get to the beginning of the file for each full pass
-// 		_, err := in.Seek(0, 0)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
+		// get to the beginning of the file for each full pass
+		_, err := in.Seek(0, 0)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

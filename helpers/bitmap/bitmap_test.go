@@ -24,7 +24,7 @@ import (
 const (
 	inputFile  = "/tmp/first_pearl_input.txt"
 	outputFile = "/tmp/first_pearl_output.txt"
-	inputSize  = 10000
+	inputSize  = 1000
 	available  = inputSize / 10
 )
 

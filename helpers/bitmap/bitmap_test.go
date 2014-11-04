@@ -50,7 +50,6 @@ var sorts = map[string]sorter{
 	"BitSort":          BitSort,
 	"LimitedSort":      LimitedSort,
 	"BitSortPrimative": BitSortPrimative,
-	"BitSortGo":        BitSortGo,
 }
 
 /* TestSort loops over the available sorts and runs test functions

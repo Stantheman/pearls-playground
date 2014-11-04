@@ -24,7 +24,7 @@ import (
 const (
 	inputFile  = "/tmp/first_pearl_input.txt"
 	outputFile = "/tmp/first_pearl_output.txt"
-	inputSize  = 10000
+	inputSize  = 1000
 	available  = inputSize / 10
 )
 
@@ -50,7 +50,6 @@ var sorts = map[string]sorter{
 	"BitSort":          BitSort,
 	"LimitedSort":      LimitedSort,
 	"BitSortPrimative": BitSortPrimative,
-	"BitSortGo":        BitSortGo,
 }
 
 /* TestSort loops over the available sorts and runs test functions

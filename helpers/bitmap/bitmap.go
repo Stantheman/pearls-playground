@@ -9,38 +9,12 @@ package bitmap
 import (
 	"bufio"
 	"fmt"
+	"github.com/Stantheman/binary"
 	"math"
 	"math/big"
 	"os"
 	"strconv"
 )
-
-/* sortSetup is a helper sub to do the grunt work before the sort begins.
-Simple error checking, returns two filehandles or possibly an error. Caller
-must check error and is responsible for calling close or deferring */
-func sortSetup(input_fn, output_fn string, length, avail int) (in, out *os.File, err error) {
-	if length < 0 {
-		return nil, nil, fmt.Errorf("Length must be greater than 0: %v", length)
-	}
-
-	if avail < 0 {
-		return nil, nil, fmt.Errorf("Avail must be greater than 0: %v\n", avail)
-	}
-
-	// open the input file for reading
-	in, err = os.Open(input_fn)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// same for output
-	out, err = os.Create(output_fn)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return
-}
 
 // NaiveSort sorts using a slice of integers to store a single bit.
 //
@@ -57,7 +31,7 @@ func NaiveSort(input_fn, output_fn string, length, avail int) (err error) {
 	defer in.Close()
 	defer out.Close()
 
-	bits := make([]int, length)
+	bits := make([]uint32, length)
 
 	scanner := bufio.NewScanner(in)
 	for scanner.Scan() {
@@ -322,101 +296,6 @@ func BitSortPrimative(input_fn, output_fn string, length_b, avail_b int) (err er
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-// BitSortGo copies BitSortPrimative but uses goroutines
-func BitSortGo(input_fn, output_fn string, length_b, avail_b int) (err error) {
-
-	// input should be from gochannel, output should be to gochannel
-	in, out, err := sortSetup(input_fn, output_fn, length_b, avail_b)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-	defer out.Close()
-	writer := bufio.NewWriter(out)
-
-	// make "passes" number of goroutines all ready to emit the numbers in their range
-	bits := make([]uint64, int(math.Ceil(float64(avail_b)/64.0)))
-	passes := int(math.Ceil(float64(length_b) / float64(avail_b)))
-
-	outputs := make([]chan int64, passes)
-	errors := make([]chan error, passes)
-
-	for i := range outputs {
-		outputs[i] = make(chan int64)
-		errors[i] = make(chan error)
-	}
-
-	// kick off pass goroutines ready to emit their parts
-	for i := 0; i < passes; i++ {
-		min, max := i*avail_b, i*avail_b+avail_b
-
-		go func(input_fn string, min, max int, errch chan error, output chan int64) {
-			infh, err := os.Open(input_fn)
-			if err != nil {
-				errch <- err
-				return
-			}
-			defer infh.Close()
-
-			scanner := bufio.NewScanner(infh)
-			for scanner.Scan() {
-				val, err := strconv.ParseInt(scanner.Text(), 10, 32)
-				if err != nil {
-					errch <- err
-					continue
-				}
-				if int(val) >= min && int(val) < max {
-					//fmt.Printf("hey my max is %v and i see %v\n", max, val)
-					output <- val
-				}
-			}
-			errch <- nil
-		}(inputFile, min, max, errors[i], outputs[i])
-
-	}
-
-	for i := 0; i < passes; i++ {
-		min := i * avail_b
-
-	OuterLoop:
-		for {
-			select {
-			case j := <-outputs[i]:
-				position := (int(j) - min) / 64
-				bit := int(j) - (position * 64) - min
-				if (bits[position] & (1 << uint(bit))) > 0 {
-					return fmt.Errorf("Duplicate input: we've already seen %v\n", j)
-				}
-				bits[position] = bits[position] | 1<<uint(bit)
-			case err := <-errors[i]:
-				if err != nil {
-					return err
-				}
-				break OuterLoop
-			}
-		}
-		for j, v := range bits {
-			for k := 0; k < 64; k++ {
-				if calculated := v & (1 << uint(k)); calculated > 0 {
-					/* If we have 20 bits to play with and this is the second loop, we're looking at 20-39
-					20 bits = 1 64-bit integer to hold data. if bit 10 is set, we're at (0 * 64 + 10 + 20) = 30th bit*/
-					value := j*64 + k + min
-					_, err := fmt.Fprintf(writer, "%v\n", value)
-					if err != nil {
-						return err
-					}
-				}
-			}
-		}
-		writer.Flush()
-		for i := range bits {
-			bits[i] = 0
-		}
-
 	}
 	return nil
 }

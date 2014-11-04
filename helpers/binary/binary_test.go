@@ -1,127 +1,82 @@
 package binary
 
 import (
-	//"bytes"
-	"encoding/binary"
-	//"github.com/Stantheman/pearls/helpers/random"
 	"bufio"
-	//"io"
 	"math/rand"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 )
 
 var filename = "wow.txt"
 var create_size = 10000
-var ints = generateRandomInt32s(create_size)
+var ints = generateRandomUint32s(create_size)
 
 // benchmark make files
 func BenchmarkMakingBinaryFile(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		makeBinaryFile(false)
+		MakeBinaryFile(filename, ints)
 	}
 }
 
-func BenchmarkMakingBinaryFileBuffered(b *testing.B) {
+// control benchmark
+func BenchmarkMakingTextFileBuffered(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		makeBinaryFile(true)
+		writeIntSlice()
 	}
 }
 
 //benchmark read files
 func BenchmarkReadingBinaryFile(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		readBinaryFile(false)
-	}
-}
-
-func BenchmarkReadingBinaryFileBuffered(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		readBinaryFile(true)
+		ReadBinaryFile(filename)
 	}
 }
 
 // test making files
 func TestMakingBinaryFile(t *testing.T) {
-	if err := makeBinaryFile(false); err != nil {
-		t.Error(err)
-	}
-}
-
-func TestMakingBinaryFileBuffered(t *testing.T) {
-	if err := makeBinaryFile(true); err != nil {
+	if err := MakeBinaryFile(filename, ints); err != nil {
 		t.Error(err)
 	}
 }
 
 // test reading files
 func TestReadingBinaryFiles(t *testing.T) {
-	_, err := readBinaryFile(false)
+	_, err := ReadBinaryFile(filename)
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func TestReadingBinaryFilesBuffered(t *testing.T) {
-	_, err := readBinaryFile(true)
-	if err != nil {
-		t.Error(err)
-	}
-}
+// example control version
+func writeIntSlice() (err error) {
 
-// actual work
-func makeBinaryFile(buf bool) error {
-	fh, err := os.Create(filename)
+	writeFH, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
-	defer fh.Close()
 
-	if buf {
-		bfh := bufio.NewWriter(fh)
-		if err := binary.Write(bfh, binary.BigEndian, ints); err != nil {
-			return err
-		}
-		bfh.Flush()
-	} else {
-		if err := binary.Write(fh, binary.BigEndian, ints); err != nil {
+	defer writeFH.Close()
+
+	writer := bufio.NewWriter(writeFH)
+	for _, v := range ints {
+		_, err := writer.WriteString(strconv.Itoa(int(v)) + "\n")
+		if err != nil {
 			return err
 		}
 	}
-
+	writer.Flush()
 	return nil
 }
 
 // helper
-func generateRandomInt32s(count int) (list []int32) {
+func generateRandomUint32s(count int) (list []uint32) {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	list = make([]int32, count)
+	list = make([]uint32, count)
 
 	for i := 0; i < count; i++ {
-		list[i] = r.Int31()
+		list[i] = r.Uint32()
 	}
 	return
-}
-
-func readBinaryFile(buf bool) ([]int32, error) {
-	fh, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer fh.Close()
-	readints := make([]int32, create_size)
-
-	if buf {
-		bfh := bufio.NewReader(fh)
-
-		if err := binary.Read(bfh, binary.BigEndian, readints); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := binary.Read(fh, binary.BigEndian, readints); err != nil {
-			return nil, err
-		}
-	}
-	return readints, nil
 }

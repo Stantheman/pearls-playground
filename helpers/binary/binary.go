@@ -1,0 +1,5 @@
+package binary
+
+import (
+//	"fmt"
+)

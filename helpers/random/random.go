@@ -2,15 +2,17 @@
 package random
 
 import (
+	"errors"
 	"math/rand"
 	"sort"
 	"time"
 )
 
+var r = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 // GenerateIncreasingRandomIntegers generates a list of randomly increasing integers with length "count".
 // The list includes no duplicates.
 func GenerateIncreasingRandomIntegers(count int) (list []int) {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	list = make([]int, count)
 
 	for loop, index := 0, 0; index < len(list); loop++ {
@@ -24,7 +26,6 @@ func GenerateIncreasingRandomIntegers(count int) (list []int) {
 
 // GenerateUniqueRandomIntegers generates a list of random unique integers.
 func GenerateUniqueRandomIntegers(count int) (list sort.IntSlice) {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	list = make([]int, count)
 
 	for i := range list {
@@ -44,7 +45,6 @@ func GenerateUniqueRandomIntegers(count int) (list sort.IntSlice) {
 
 // GenerateLimitedRandomIntegers generates a list of random integers that occur up 0..N times.
 func GenerateLimitedRandomIntegers(count, occur int) (list sort.IntSlice) {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	// this is a horrifying way of making an always-growing list that's probably terrible
 	list = make([]int, 0)
 
@@ -63,4 +63,18 @@ func GenerateLimitedRandomIntegers(count, occur int) (list sort.IntSlice) {
 	}
 
 	return
+}
+
+// GenerateRandomIntegers creates a list of 32bit integers with values up to bitcount bits
+// 20 bitcount = 1<<20-1 max
+func GenerateRandomIntegers(count int, bitcount uint32) (list []uint32, err error) {
+	if bitcount > 32 {
+		return nil, errors.New("limit must <= 32 bits")
+	}
+	list = make([]uint32, count)
+
+	for i := 0; i < count; i++ {
+		list[i] = r.Uint32() % uint32((1<<bitcount)-1)
+	}
+	return list, nil
 }

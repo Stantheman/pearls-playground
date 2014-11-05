@@ -33,6 +33,25 @@ func TestGenerateIncreasingRandomIntegers(t *testing.T) {
 	}
 }
 
+func TestGenerateRandomIntegers(t *testing.T) {
+	size := 5
+	numbers, err := GenerateRandomIntegers(size, 32)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(numbers) != size {
+		t.Errorf("not the same size. result: %v, expected %v\n", len(numbers), size)
+	}
+
+	perc := make(map[uint32]int)
+	for i := 0; i < 1000; i++ {
+
+		numbers, err = GenerateRandomIntegers(1, 3)
+		perc[numbers[0]] += 1
+	}
+	t.Logf("%#v\n", perc)
+}
+
 // TestGenerateUniqueRandomIntegers checks size and uniqueness
 func TestGenerateUniqueRandomIntegers(t *testing.T) {
 	numbers := GenerateUniqueRandomIntegers(ArraySize)
@@ -93,9 +112,10 @@ func TestDistributionRandom(t *testing.T) {
 	runs := 100000
 
 	for i := 0; i < runs; i++ {
-		list := GenerateUniqueRandomIntegers(ArraySize)
+		list, _ := GenerateRandomIntegers(ArraySize, 32)
+		//t.Logf("list: %v, numbers %v\n", len(list), len(numbers))
 		for j := 0; j < ArraySize; j++ {
-			numbers[j] += list[j]
+			numbers[j] += int(list[j])
 		}
 	}
 

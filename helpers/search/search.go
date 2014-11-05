@@ -8,7 +8,6 @@ package search
 import (
 	"bufio"
 	"encoding/binary"
-	//"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -22,7 +21,6 @@ const (
 // Missing takes a list of 32-bit numbers and the maximum int size in bits
 // and the number of integers on the file and returns a missing int
 func Missing(filename string, max, count int, mask, position uint32) (missing uint32, err error) {
-
 	// open a bunch of filehandles
 	err, in_fh, one_fh, zero_fh := setup(filename, mask)
 	if err != nil {

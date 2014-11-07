@@ -3,7 +3,7 @@ package fliptext
 import (
 	// "fmt"
 	"bytes"
-	"strings"
+	// "strings"
 )
 
 var buffer bytes.Buffer
@@ -51,7 +51,9 @@ func RotateTextTimes(t string, times int) string {
 
 // one successful approach is just a delicate juggling act:
 // move X[1] to temporary var t, then move X[I + 1] to X[1],
-// X[2I + 1] to X[I + 1]
+// X[2I + 1] to X[I + 1].
 func RotateDelicate(t string, shift int) string {
+	//temp := t[0]
+	return "Wow"
 
 }

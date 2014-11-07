@@ -37,3 +37,17 @@ func TestMissing(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkMissing(b *testing.B) {
+	ints, err := random.GenerateRandomIntegers(count, bits)
+	if err != nil {
+		b.Error(err)
+	}
+	if err := binary.MakeBinaryFile(filename, ints); err != nil {
+		b.Error(err)
+	}
+	for i := 0; i < b.N; i++ {
+		Missing(filename, bits, count, 1, 0)
+	}
+
+}

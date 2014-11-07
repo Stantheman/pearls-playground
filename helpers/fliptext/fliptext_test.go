@@ -18,10 +18,9 @@ func BenchmarkRotateTextNaive(b *testing.B) {
 }
 
 func TestRotateTextNaiveLessMem(t *testing.T) {
-	// for i := 0; i < len(teststring); i++ {
-	// 	t.Logf("%v: %v\n", i, RotateTextNaiveLessMem(teststring, i))
-	// }
-	t.Log(RotateTextNaiveLessMem(teststring, 3))
+	for i := 0; i < len(teststring); i++ {
+		t.Logf("%v: %v\n", i, RotateTextNaiveLessMem(teststring, i))
+	}
 }
 func BenchmarkRotateTextNaiveLessMem(b *testing.B) {
 	for i := 0; i < b.N; i++ {
@@ -37,5 +36,28 @@ func TestRotateTextTimes(t *testing.T) {
 func BenchmarkRotateTextTimes(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		RotateTextTimes(teststring, 3)
+	}
+}
+
+func TestRotateDelicate(t *testing.T) {
+	for i := 0; i < len(teststring)*2; i++ {
+		t.Log(RotateDelicate(teststring, i))
+	}
+}
+func BenchmarkRotateDelicate(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		RotateDelicate(teststring, 3)
+	}
+}
+
+func TestRotateDelicateBytes(t *testing.T) {
+	for i := 0; i < len(teststring)*2; i++ {
+		t.Log(RotateDelicateBytes([]byte(teststring), i))
+	}
+}
+func BenchmarkRotateDelicateBytes(b *testing.B) {
+	bytestring := []byte(teststring)
+	for i := 0; i < b.N; i++ {
+		RotateDelicateBytes(bytestring, 3)
 	}
 }

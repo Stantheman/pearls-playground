@@ -1,8 +1,8 @@
 package fliptext
 
 import (
-	// "fmt"
 	"bytes"
+	// "fmt"
 	// "strings"
 )
 
@@ -51,9 +51,44 @@ func RotateTextTimes(t string, times int) string {
 
 // one successful approach is just a delicate juggling act:
 // move X[1] to temporary var t, then move X[I + 1] to X[1],
-// X[2I + 1] to X[I + 1].
+// X[2I + 1] to X[I + 1]. if this hasn't moved every entry, try again
+// with 2
 func RotateDelicate(t string, shift int) string {
-	//temp := t[0]
-	return "Wow"
+	temp := t[0]
+	length := len(t)
+	shift = shift % length
+	// make a modifiable copy of string
+	bytes := make([]byte, length)
+	copy(bytes, t)
 
+	for i := shift; ; i = (i + shift) % length {
+		var send int = (length + i - shift) % length
+
+		if i != 0 {
+			bytes[send] = t[i]
+		} else {
+			bytes[send] = temp
+			break
+		}
+	}
+
+	return string(bytes)
+}
+func RotateDelicateBytes(bytes []byte, shift int) string {
+	temp := bytes[0]
+	length := len(bytes)
+	shift = shift % length
+
+	for i := shift; ; i = (i + shift) % length {
+		var send int = (length + i - shift) % length
+
+		if i != 0 {
+			bytes[send] = bytes[i]
+		} else {
+			bytes[send] = temp
+			break
+		}
+	}
+
+	return string(bytes)
 }

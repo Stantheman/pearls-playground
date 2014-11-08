@@ -1,5 +1,6 @@
 package gcd
 
+// EuclidGCD performs the basic recursive GCD algorithm. In Go 1.3 this outperforms the other two
 func EuclidGCD(a, b uint) uint {
 	if b == 0 {
 		return a
@@ -7,6 +8,8 @@ func EuclidGCD(a, b uint) uint {
 	return EuclidGCD(b, a%b)
 }
 
+// BinaryGCD is the recursive form of the Binary GCD algorithm
+// It's the slowest, I think in part because Go's bit manipulation functions are slow
 // from wikipedia, http://en.wikipedia.org/wiki/Binary_GCD_algorithm
 func BinaryGCD(a, b uint) uint {
 	// simple cases (termination)
@@ -38,6 +41,7 @@ func BinaryGCD(a, b uint) uint {
 	return BinaryGCD((b-a)>>1, a)
 }
 
+// IterativeBinaryGCD tries to be smarter about things
 // also adapted from wikipedia
 func IterativeBinaryGCD(a, b uint) uint {
 	/* GCD(0,b) == b; GCD(a,0) == a, GCD(0,0) == 0 */

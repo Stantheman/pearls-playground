@@ -3,6 +3,7 @@ package fliptext
 import (
 	"bytes"
 	// "fmt"
+	"math/big"
 	// "strings"
 )
 
@@ -57,18 +58,23 @@ func RotateDelicate(t string, shift int) string {
 	temp := t[0]
 	length := len(t)
 	shift = shift % length
+	var gcd big.Int
+	gcd.GCD(nil, nil, big.NewInt(int64(length)), big.NewInt(int64(shift)))
 	// make a modifiable copy of string
 	bytes := make([]byte, length)
 	copy(bytes, t)
 
-	for i := shift; ; i = (i + shift) % length {
-		var send int = (length + i - shift) % length
+	for perm := 0; perm < int(gcd.Int64()); perm++ {
+		for i := shift + perm; ; i = (i + shift) % length {
+			var send int = (length + i - shift) % length
 
-		if i != 0 {
-			bytes[send] = t[i]
-		} else {
-			bytes[send] = temp
-			break
+			if i != perm {
+				bytes[send] = t[i]
+			} else {
+				bytes[send] = temp
+				break
+			}
+
 		}
 	}
 
@@ -78,15 +84,19 @@ func RotateDelicateBytes(bytes []byte, shift int) string {
 	temp := bytes[0]
 	length := len(bytes)
 	shift = shift % length
+	var gcd big.Int
+	gcd.GCD(nil, nil, big.NewInt(int64(length)), big.NewInt(int64(shift)))
 
-	for i := shift; ; i = (i + shift) % length {
-		var send int = (length + i - shift) % length
+	for perm := 0; perm < int(gcd.Int64()); perm++ {
+		for i := shift + perm; ; i = (i + shift) % length {
+			var send int = (length + i - shift) % length
 
-		if i != 0 {
-			bytes[send] = bytes[i]
-		} else {
-			bytes[send] = temp
-			break
+			if i != perm {
+				bytes[send] = bytes[i]
+			} else {
+				bytes[send] = temp
+				break
+			}
 		}
 	}
 

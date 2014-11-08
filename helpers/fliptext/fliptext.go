@@ -2,9 +2,8 @@ package fliptext
 
 import (
 	"bytes"
-	// "fmt"
-	"math/big"
-	// "strings"
+	"github.com/Stantheman/pearls/helpers/gcd"
+	// "math/big"
 )
 
 var buffer bytes.Buffer
@@ -58,13 +57,12 @@ func RotateDelicate(t string, shift int) string {
 	temp := t[0]
 	length := len(t)
 	shift = shift % length
-	var gcd big.Int
-	gcd.GCD(nil, nil, big.NewInt(int64(length)), big.NewInt(int64(shift)))
+	perms := int(gcd.EuclidGCD(uint(shift), uint(length)))
 	// make a modifiable copy of string
 	bytes := make([]byte, length)
 	copy(bytes, t)
 
-	for perm := 0; perm < int(gcd.Int64()); perm++ {
+	for perm := 0; perm < perms; perm++ {
 		for i := shift + perm; ; i = (i + shift) % length {
 			var send int = (length + i - shift) % length
 
@@ -84,10 +82,9 @@ func RotateDelicateBytes(bytes []byte, shift int) string {
 	temp := bytes[0]
 	length := len(bytes)
 	shift = shift % length
-	var gcd big.Int
-	gcd.GCD(nil, nil, big.NewInt(int64(length)), big.NewInt(int64(shift)))
+	perms := int(gcd.EuclidGCD(uint(shift), uint(length)))
 
-	for perm := 0; perm < int(gcd.Int64()); perm++ {
+	for perm := 0; perm < perms; perm++ {
 		for i := shift + perm; ; i = (i + shift) % length {
 			var send int = (length + i - shift) % length
 

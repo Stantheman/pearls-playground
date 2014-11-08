@@ -4,3 +4,4 @@ This started with me learning Go and has (d)evolved into a smattering of package
 
 Most sections are driven by tests, which likely also include benchmarks. The test setup for column 1 is especially rough because I thought I'd be clever about meta testing and made some poor calls. Like I said, a lot of the stuff is me hopping around with ideas, and focusing on the programming pearl lesson.
 
+Most of the code is in helpers, which is probably not great

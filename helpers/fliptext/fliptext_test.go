@@ -18,7 +18,7 @@ func BenchmarkRotateTextNaive(b *testing.B) {
 }
 
 func TestRotateTextNaiveLessMem(t *testing.T) {
-	for i := 0; i < len(teststring); i++ {
+	for i := 0; i < len(teststring)*2; i++ {
 		t.Logf("%v: %v\n", i, RotateTextNaiveLessMem(teststring, i))
 	}
 }

@@ -34,18 +34,12 @@ func RotateTextNaive(t string, shift int) string {
 	return buffer.String()
 }
 
-// then the less memory intensive naive one, copies shift characters
-// into a temporary buffer, shifts the rest of the array over, then appends
-// cheating since this is less raw not shifting make 2 versions
 func RotateTextNaiveLessMem(t string, shift int) string {
 	shift = shift % len(t)
 	if shift == 0 {
 		return t
 	}
-	intermediate := t[:shift]
-	t = t[shift:]
-	t += intermediate
-	return t
+	return t[shift:] + t[:shift]
 }
 
 // for a different approach, we could define a subroutine to rotate X left one

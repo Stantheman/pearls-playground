@@ -52,12 +52,22 @@ func BenchmarkRotateDelicate(b *testing.B) {
 
 func TestRotateDelicateBytes(t *testing.T) {
 	for i := 0; i < len(teststring)*2; i++ {
-		t.Log(RotateDelicateBytes([]byte(teststring), i))
+		t.Log(string(RotateDelicateBytes([]byte(teststring), i)))
 	}
 }
 func BenchmarkRotateDelicateBytes(b *testing.B) {
-	bytestring := []byte(teststring)
 	for i := 0; i < b.N; i++ {
-		RotateDelicateBytes(bytestring, 3)
+		RotateDelicateBytes([]byte(teststring), 3)
+	}
+}
+
+func TestRotateReverseBytes(t *testing.T) {
+	for i := 0; i < len(teststring)*2; i++ {
+		t.Log(string(RotateReverseBytes([]byte(teststring), i)))
+	}
+}
+func BenchmarkRotateReverseBytes(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		RotateReverseBytes([]byte(teststring), 3)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/Stantheman/pearls/helpers/gcd"
 	// "math/big"
+	// "os"
 )
 
 var buffer bytes.Buffer
@@ -91,12 +92,12 @@ func RotateDelicate(t string, shift int) string {
 
 	return string(bytes)
 }
-func RotateDelicateBytes(bytes []byte, shift int) string {
+func RotateDelicateBytes(bytes []byte, shift int) []byte {
 	temp := bytes[0]
 	length := len(bytes)
 	shift = shift % length
 	if shift == 0 {
-		return string(bytes)
+		return bytes
 	}
 	perms := int(gcd.EuclidGCD(uint(shift), uint(length)))
 
@@ -113,5 +114,22 @@ func RotateDelicateBytes(bytes []byte, shift int) string {
 		}
 	}
 
-	return string(bytes)
+	return bytes
+}
+
+func RotateReverseBytes(bytes []byte, shift int) []byte {
+	shift = shift % len(bytes)
+	if shift == 0 {
+		return bytes
+	}
+	bytes = reverseBytes(bytes, 0, shift-1)
+	bytes = reverseBytes(bytes, shift, len(bytes)-1)
+	return reverseBytes(bytes, 0, len(bytes)-1)
+}
+
+func reverseBytes(bytes []byte, start, end int) []byte {
+	for i, j := start, end; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	return bytes
 }

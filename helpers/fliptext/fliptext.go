@@ -17,6 +17,9 @@ should become DEFGHABC*/
 // in N steps"
 func RotateTextNaive(t string, shift int) string {
 	var pointer int = shift % len(t)
+	if pointer == 0 {
+		return t
+	}
 	// faster concatenation, same idea as intermediate += string(t[pointer])
 	buffer.Truncate(0)
 
@@ -34,6 +37,10 @@ func RotateTextNaive(t string, shift int) string {
 // into a temporary buffer, shifts the rest of the array over, then appends
 // cheating since this is less raw not shifting make 2 versions
 func RotateTextNaiveLessMem(t string, shift int) string {
+	shift = shift % len(t)
+	if shift == 0 {
+		return t
+	}
 	intermediate := t[:shift]
 	t = t[shift:]
 	t += intermediate
@@ -43,6 +50,9 @@ func RotateTextNaiveLessMem(t string, shift int) string {
 // for a different approach, we could define a subroutine to rotate X left one
 // position, and call it I times, but that would be too time intensive
 func RotateTextTimes(t string, times int) string {
+	if times == 0 {
+		return t
+	}
 	for i := 0; i < times; i++ {
 		t = RotateTextNaiveLessMem(t, 1)
 	}
@@ -57,6 +67,9 @@ func RotateDelicate(t string, shift int) string {
 	temp := t[0]
 	length := len(t)
 	shift = shift % length
+	if shift == 0 {
+		return t
+	}
 	perms := int(gcd.EuclidGCD(uint(shift), uint(length)))
 	// make a modifiable copy of string
 	bytes := make([]byte, length)
@@ -82,6 +95,9 @@ func RotateDelicateBytes(bytes []byte, shift int) string {
 	temp := bytes[0]
 	length := len(bytes)
 	shift = shift % length
+	if shift == 0 {
+		return string(bytes)
+	}
 	perms := int(gcd.EuclidGCD(uint(shift), uint(length)))
 
 	for perm := 0; perm < perms; perm++ {

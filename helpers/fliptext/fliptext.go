@@ -111,14 +111,38 @@ func RotateDelicateBytes(bytes []byte, shift int) []byte {
 	return bytes
 }
 
+// func RotateReverseBytes(bytes []byte, shift int) []byte {
+// 	shift = shift % len(bytes)
+// 	if shift == 0 {
+// 		return bytes
+// 	}
+// 	bytes = reverseBytes(bytes, 0, shift-1)
+// 	bytes = reverseBytes(bytes, shift, len(bytes)-1)
+// 	return reverseBytes(bytes, 0, len(bytes)-1)
+// }
+
+// this one doesn't use the function, but by avoiding the function we beat
+// the golang naive one
 func RotateReverseBytes(bytes []byte, shift int) []byte {
-	shift = shift % len(bytes)
+	length := len(bytes)
+	shift = shift % length
 	if shift == 0 {
 		return bytes
 	}
-	bytes = reverseBytes(bytes, 0, shift-1)
-	bytes = reverseBytes(bytes, shift, len(bytes)-1)
-	return reverseBytes(bytes, 0, len(bytes)-1)
+	var i, j int
+	// reverse the first chunk
+	for i, j = 0, shift-1; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	// reverse the second chunk
+	for i, j = shift, length-1; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	// reverse the whole thing
+	for i, j = 0, length-1; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	return bytes
 }
 
 func reverseBytes(bytes []byte, start, end int) []byte {

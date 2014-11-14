@@ -9,10 +9,8 @@ package bitmap
 import (
 	"bufio"
 	"fmt"
-	"github.com/Stantheman/binary"
 	"math"
 	"math/big"
-	"os"
 	"strconv"
 )
 

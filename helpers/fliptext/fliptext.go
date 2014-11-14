@@ -129,20 +129,21 @@ func RotateReverseBytes(bytes []byte, shift int) []byte {
 	if shift == 0 {
 		return bytes
 	}
-	var i, j int
+	copied := make([]byte, length)
+	copy(copied, bytes)
 	// reverse the first chunk
-	for i, j = 0, shift-1; i < j; i, j = i+1, j-1 {
-		bytes[i], bytes[j] = bytes[j], bytes[i]
+	for i, j := 0, shift-1; i < j; i, j = i+1, j-1 {
+		copied[i], copied[j] = copied[j], copied[i]
 	}
 	// reverse the second chunk
-	for i, j = shift, length-1; i < j; i, j = i+1, j-1 {
-		bytes[i], bytes[j] = bytes[j], bytes[i]
+	for i, j := shift, length-1; i < j; i, j = i+1, j-1 {
+		copied[i], copied[j] = copied[j], copied[i]
 	}
 	// reverse the whole thing
-	for i, j = 0, length-1; i < j; i, j = i+1, j-1 {
-		bytes[i], bytes[j] = bytes[j], bytes[i]
+	for i, j := 0, length-1; i < j; i, j = i+1, j-1 {
+		copied[i], copied[j] = copied[j], copied[i]
 	}
-	return bytes
+	return copied
 }
 
 func reverseBytes(bytes []byte, start, end int) []byte {

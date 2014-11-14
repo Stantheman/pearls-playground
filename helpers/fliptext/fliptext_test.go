@@ -67,7 +67,8 @@ func TestRotateReverseBytes(t *testing.T) {
 	}
 }
 func BenchmarkRotateReverseBytes(b *testing.B) {
+	bytestring := []byte(teststring)
 	for i := 0; i < b.N; i++ {
-		RotateReverseBytes([]byte(teststring), 3)
+		RotateReverseBytes(bytestring, 3)
 	}
 }

@@ -102,7 +102,7 @@ func TestGenerateLimitedRandomIntegers(t *testing.T) {
 			t.Errorf("More than %v occurences of %v\n", limit, last)
 		}
 		if v > ArraySize {
-			t.Error("%v is larger than the max of %v\n", v, ArraySize)
+			t.Errorf("%v is larger than the max of %v\n", v, ArraySize)
 		}
 	}
 }
@@ -144,7 +144,7 @@ func TestDistributionRandom(t *testing.T) {
 		if difference < len(distribution) {
 			distribution[difference]++
 		} else {
-			t.Errorf("%v is more than 3 standard devations away\n")
+			t.Errorf("%v is more than 3 standard devations away\n", difference)
 		}
 	}
 

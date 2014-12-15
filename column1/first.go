@@ -27,7 +27,7 @@ BenchmarkLimitedSortOnePass       200                                          8
 BenchmarkBitSortOnePass           100                                          10217766  ns/op  103156  B/op  10327  allocs/op
 BenchmarkBitSortPrimativeOnePass  200                                          9028865   ns/op  90356   B/op  10011  allocs/op
 ` + asterisks)
-	fmt.Println("Each of these sorts, given enough memory, beat the native Go sort by taking advantage of the problem requirements\n")
+	fmt.Println("Each of these sorts, given enough memory, beat the native Go sort by taking advantage of the problem requirements")
 	fmt.Println("The executable, compiled to run the NaiveSort is on par with the sort command as well:")
 	fmt.Println(asterisks + `
 		➜  pearls git:(master) ✗ time ../../../../bin/pearls
